@@ -1,1 +1,1 @@
-# NICE-AcrobatReaderExtended
+# NICE-BrowserPopUpActions
