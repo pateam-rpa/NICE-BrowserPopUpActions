@@ -9,3 +9,4 @@ C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserP
 C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.csproj.CoreCompileInputs.cache
 C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.dll
 C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.pdb
+C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.csproj.CopyComplete
