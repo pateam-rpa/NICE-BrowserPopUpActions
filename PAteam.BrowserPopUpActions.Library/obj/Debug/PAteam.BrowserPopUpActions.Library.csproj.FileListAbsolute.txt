@@ -10,3 +10,14 @@ C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserP
 C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.dll
 C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.pdb
 C:\Users\Mateusz\source\repos\PAteam.BrowserPopUpActions.Library\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.csproj.CopyComplete
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\bin\Debug\PAteam.BrowserPopUpActions.Library.dll
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\bin\Debug\PAteam.BrowserPopUpActions.Library.pdb
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\bin\Debug\Direct.Interface.dll
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\bin\Debug\Direct.Shared.dll
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\bin\Debug\log4net.dll
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.csproj.AssemblyReference.cache
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.csproj.CoreCompileInputs.cache
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.csproj.CopyComplete
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.dll
+C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-BrowserPopUpActions\PAteam.BrowserPopUpActions.Library\obj\Debug\PAteam.BrowserPopUpActions.Library.pdb
