@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Local settings (.vs)"
+    "\\bin",
+    "\\obj",
+    "\\Properties"
   ],
   "PreviewInSolutionExplorer": true
 }
