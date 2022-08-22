@@ -4,19 +4,19 @@ using log4net;
 using System.Windows.Automation;
 using System.Text;
 
-namespace Direct.BrowserPopUpActions.Library
+namespace Direct.BrowserDialogActions.Library
 {
     [DirectSealed]
-    [DirectDom("Browser PopUp Functions")]
+    [DirectDom("Browser Dialog Actions")]
     [ParameterType(false)]
-    public static class BrowserPopUpFunctions
+    public static class BrowserDialogFunctions
     {
         private static readonly ILog _log = LogManager.GetLogger("LibraryObjects");
-        private static string packageName = "Direct.BrowserPopUpActions.Library";
-        private static PropertyCondition popUpPropertyCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "dialog");
+        private static string packageName = "Direct.BrowserDialogActions.Library";
+        private static PropertyCondition DialogPropertyCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "dialog");
         private static PropertyCondition inputFileButtonCondition = new PropertyCondition(AutomationElement.AutomationIdProperty, "file-upload-button");
-        private static PropertyCondition popupOKButtonCondition = new PropertyCondition(AutomationElement.NameProperty, "OK");
-        private static PropertyCondition popupCancelButtonCondition = new PropertyCondition(AutomationElement.NameProperty, "Cancel");
+        private static PropertyCondition DialogOKButtonCondition = new PropertyCondition(AutomationElement.NameProperty, "OK");
+        private static PropertyCondition DialogCancelButtonCondition = new PropertyCondition(AutomationElement.NameProperty, "Cancel");
 
         private static void LogDebug(string message)
         {
@@ -34,35 +34,35 @@ namespace Direct.BrowserPopUpActions.Library
             }
         }
 
-        [DirectDom("Get Pop-up Existence")]
-        [DirectDomMethod("Get Browser Pop-up Existence")]
-        [MethodDescription("Iterates over all browser windows and evaluate if the popup notification could be found")]
-        public static bool PopUpExists()
+        [DirectDom("Get Dialog Existence")]
+        [DirectDomMethod("Get Active Tab Dialog Existence")]
+        [MethodDescription("Evaluates if the browser Dialog windows like: alert, confirm could be found")]
+        public static bool DialogExists()
         {
             try
             {
-                return GetPopUpExistence();
+                return GetDialogExistence();
             }
             catch (Exception e)
             {
-                LogError("Get Browser PopUp Existence Exception", e);
+                LogError("Get Browser Dialog Existence Exception", e);
                 return false;
             }
         }
 
-        [DirectDom("Get Pop-up Text")]
-        [DirectDomMethod("Get Browser Pop-up Text")]
-        [MethodDescription("Iterates over all browser windows and return text from popup window if found")]
-        public static string GetPopUpText()
+        [DirectDom("Get Dialog Text")]
+        [DirectDomMethod("Get Active Tab Dialog Text")]
+        [MethodDescription("Returns browser Dialog text on active tab if found")]
+        public static string GetDialogText()
         {
             try
             {
-                AutomationElement PopUpAUElement = GetBrowserChildAUElement(popUpPropertyCondition, TreeScope.Children);
-                if (PopUpAUElement != null)
+                AutomationElement DialogAUElement = GetBrowserChildAUElement(DialogPropertyCondition, TreeScope.Children);
+                if (DialogAUElement != null)
                 {
                     Condition LabelPropertyCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "text");
-                    LogDebug("Finding browser popup text elements...");
-                    AutomationElementCollection TextElements = PopUpAUElement.FindAll(TreeScope.Descendants, LabelPropertyCondition);
+                    LogDebug("Finding browser Dialog text elements...");
+                    AutomationElementCollection TextElements = DialogAUElement.FindAll(TreeScope.Descendants, LabelPropertyCondition);
                     StringBuilder finalText = new StringBuilder();
                     LogDebug("Found " + TextElements.Count.ToString() + " text elements");
                     foreach (AutomationElement TextElement in TextElements)
@@ -78,31 +78,31 @@ namespace Direct.BrowserPopUpActions.Library
             }
             catch (Exception e)
             {
-                LogError("Get Browser PopUp Text Exception", e);
+                LogError("Get Browser Dialog Text Exception", e);
                 return string.Empty;
             }
         }
 
-        [DirectDom("Click Pop-up OK Button")]
-        [DirectDomMethod("Click Pop-up OK Button")]
+        [DirectDom("Click Dialog OK Button")]
+        [DirectDomMethod("Click Active Tab Dialog OK Button")]
         [MethodDescription("Clicks OK Button on found browser active tab pop up")]
-        public static bool ClickPopUpOK()
+        public static bool ClickDialogOK()
         {
-            return ClickPopUpButton(popupOKButtonCondition);
+            return ClickDialogButton(DialogOKButtonCondition);
         }
 
-        [DirectDom("Click Pop-up Cancel Button")]
-        [DirectDomMethod("Click Pop-up Cancel Button")]
+        [DirectDom("Click Dialog Cancel Button")]
+        [DirectDomMethod("Click Active Tab Dialog Cancel Button")]
         [MethodDescription("Clicks Cancel Button on found browser active tab pop up")]
-        public static bool ClickPopUpCancel()
+        public static bool ClickDialogCancel()
         {
-            return ClickPopUpButton(popupCancelButtonCondition);
+            return ClickDialogButton(DialogCancelButtonCondition);
         }
 
 
 
         [DirectDom("Open File Dialog on active page")]
-        [DirectDomMethod("Open file dialog on active page")]
+        [DirectDomMethod("Open File Dialog On Active Page")]
         [MethodDescription("Opens File Dialog to select files to upload")]
         public static bool OpenFileDialog()
         {
@@ -125,14 +125,14 @@ namespace Direct.BrowserPopUpActions.Library
             }
         }
 
-        private static bool GetPopUpExistence()
+        private static bool GetDialogExistence()
         {
-            LogDebug("Finding browser popup element...");
-            AutomationElement PopUpAUElement = GetBrowserChildAUElement(popUpPropertyCondition, TreeScope.Children);
+            LogDebug("Finding browser Dialog element...");
+            AutomationElement DialogAUElement = GetBrowserChildAUElement(DialogPropertyCondition, TreeScope.Children);
 
-            if (PopUpAUElement != null)
+            if (DialogAUElement != null)
             {
-                LogDebug("Found dialog with localized control type: " + PopUpAUElement.Current.LocalizedControlType + " and name: " + PopUpAUElement.Current.Name);
+                LogDebug("Found dialog with localized control type: " + DialogAUElement.Current.LocalizedControlType + " and name: " + DialogAUElement.Current.Name);
                 return true;
             }
 
@@ -194,15 +194,15 @@ namespace Direct.BrowserPopUpActions.Library
             ((InvokePattern)invokePattern).Invoke();
         }
 
-        private static bool ClickPopUpButton(PropertyCondition popupButtonCondition)
+        private static bool ClickDialogButton(PropertyCondition DialogButtonCondition)
         {
             try
             {
-                AutomationElement PopUpAUElement = GetBrowserChildAUElement(popUpPropertyCondition, TreeScope.Children);
-                if (PopUpAUElement != null)
+                AutomationElement DialogAUElement = GetBrowserChildAUElement(DialogPropertyCondition, TreeScope.Children);
+                if (DialogAUElement != null)
                 {
-                    LogDebug("Finding browser popup button element...");
-                    AutomationElement ButtonElement = PopUpAUElement.FindFirst(TreeScope.Descendants, popupButtonCondition);
+                    LogDebug("Finding browser Dialog button element...");
+                    AutomationElement ButtonElement = DialogAUElement.FindFirst(TreeScope.Descendants, DialogButtonCondition);
                     LogDebug("Clicking OK Button...");
                     ClickOnButton(ButtonElement);
                     return true;
@@ -212,7 +212,7 @@ namespace Direct.BrowserPopUpActions.Library
             }
             catch (Exception e)
             {
-                LogError("Close Browser PopUp", e);
+                LogError("Close Browser Dialog", e);
                 return false;
             }
         }
