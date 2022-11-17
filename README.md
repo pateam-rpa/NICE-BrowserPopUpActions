@@ -4,7 +4,7 @@ Package Name: **PAteam.BrowserDialog_Actions**
 
 Author: Mateusz Majchrzak
 
-Version: 1.0.0.0
+Version: 2.0.0.0
 
 Compatibility: Version 7.5 and higher
 
@@ -39,35 +39,41 @@ This package includes multiple functions:
 
 # Functions
 
-Name: **Get Active Tab Dialog Existence**
- - Description: Checks active browser tab for dialog box. If found returns true, else false.
+Name: **Get dialog existence**
+ - Description: Checks active browser tab for dialog box. If found returns true, else false. Supports only the following languages: PL, EN, DE, SP, IT
  - Parameters:
  - Returns:
    - Description: Active browser tab dialog existence. True – dialog box exists, False – when dialog box doesn’t exist or in progress.
    - Type: Boolean
 
-Name: **Get Active Tab Dialog Text**
+Name: **Get dialog text**
  - Description: Looks at browser active tab to identify dialog box. If found, proceeds to retrieve the dialog body text.
  - Parameters:
  - Returns:
    - Description: Active tab dialog box body text.
    - Type: Text
 
-Name: **Click Active Tab Dialog OK Button**
- - Description: Looks at browser active tab to identify dialog box. If found, proceeds to clicking on OK button.
+Name: **Click dialog button**
+ - Description: Looks at browser active tab to identify dialog box. If found, proceeds to clicking on button with provided name.
  - Parameters:
+   - Description: Dialog button name
+   - Type: Text
  - Returns:
    - Description: Status of pressing the OK button. True – button clicked, False – failed to click or still in progress
    - Type: Boolean
 
-Name: **Click Active Tab Dialog Cancel Button**
- - Description: Looks at browser active tab to identify dialog box. If found, proceeds to clicking on Cancel button.
+Name: **Set dialog edit value**
+ - Description: Looks at browser active tab to identify dialog box. If found, proceeds to set provided value in edit value with user provided name.
  - Parameters:
+   - Description: Edit element name
+   - Type: Text
+   - Description: Value to set
+   - Type: Text
  - Returns:
    - Description: Status of pressing the Cancel button. True – button clicked, False – failed to click or still in progress.
    - Type: Boolean
 
-Name: **Open File Dialog On Active Page**
+Name: **Open file dialog**
  - Description: Looks at browser active tab to identify first file upload button. If found, proceeds to pressing on it, what should result with open file picker window.
  - Parameters:
  - Returns:

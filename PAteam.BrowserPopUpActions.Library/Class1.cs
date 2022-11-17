@@ -12,17 +12,13 @@ namespace Direct.BrowserDialogActions.Library
     public static class BrowserDialogFunctions
     {
         private static readonly ILog _log = LogManager.GetLogger("LibraryObjects");
-        private static string packageName = "Direct.BrowserDialogActions.Library";
-        private static PropertyCondition DialogPropertyCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "dialog");
-        private static PropertyCondition inputFileButtonCondition = new PropertyCondition(AutomationElement.AutomationIdProperty, "file-upload-button");
-        private static PropertyCondition DialogOKButtonCondition = new PropertyCondition(AutomationElement.NameProperty, "OK");
-        private static PropertyCondition DialogCancelButtonCondition = new PropertyCondition(AutomationElement.NameProperty, "Cancel");
+        private static readonly string PackageName = "Direct.BrowserDialogActions.Library";
 
         private static void LogDebug(string message)
         {
             if (_log.IsDebugEnabled)
             {
-                _log.Debug(packageName + " - " + message);
+                _log.Debug(PackageName + " - " + message);
             }
         }
 
@@ -30,12 +26,12 @@ namespace Direct.BrowserDialogActions.Library
         {
             if (_log.IsErrorEnabled)
             {
-                _log.Debug(packageName + " - " + message, exception);
+                _log.Debug(PackageName + " - " + message, exception);
             }
         }
 
-        [DirectDom("Get Dialog Existence")]
-        [DirectDomMethod("Get Active Tab Dialog Existence")]
+        [DirectDom("Get dialog existence")]
+        [DirectDomMethod("Get dialog existence")]
         [MethodDescription("Evaluates if the browser Dialog windows like: alert, confirm could be found")]
         public static bool DialogExists()
         {
@@ -50,25 +46,29 @@ namespace Direct.BrowserDialogActions.Library
             }
         }
 
-        [DirectDom("Get Dialog Text")]
-        [DirectDomMethod("Get Active Tab Dialog Text")]
+        [DirectDom("Get dialog text")]
+        [DirectDomMethod("Get dialog text")]
         [MethodDescription("Returns browser Dialog text on active tab if found")]
         public static string GetDialogText()
         {
             try
             {
-                AutomationElement DialogAUElement = GetBrowserChildAUElement(DialogPropertyCondition, TreeScope.Children);
+                AutomationElement DialogAUElement = GetDialogElement();
                 if (DialogAUElement != null)
                 {
-                    Condition LabelPropertyCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "text");
-                    LogDebug("Finding browser Dialog text elements...");
+                    Condition LabelPropertyCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text);
+                    LogDebug("Finding browser dialog text elements...");
                     AutomationElementCollection TextElements = DialogAUElement.FindAll(TreeScope.Descendants, LabelPropertyCondition);
                     StringBuilder finalText = new StringBuilder();
                     LogDebug("Found " + TextElements.Count.ToString() + " text elements");
                     foreach (AutomationElement TextElement in TextElements)
                     {
+                        string line = GetAUElementText(TextElement);
                         LogDebug("Retrieving text property from found text element");
-                        finalText.AppendLine(GetAUElementText(TextElement));
+                        if (!string.IsNullOrEmpty(line))
+                        {
+                            finalText.AppendLine(GetAUElementText(TextElement));
+                        }
                     }
 
                     return finalText.ToString();
@@ -83,52 +83,137 @@ namespace Direct.BrowserDialogActions.Library
             }
         }
 
-        [DirectDom("Click Dialog OK Button")]
-        [DirectDomMethod("Click Active Tab Dialog OK Button")]
-        [MethodDescription("Clicks OK Button on found browser active tab pop up")]
-        public static bool ClickDialogOK()
-        {
-            return ClickDialogButton(DialogOKButtonCondition);
-        }
-
-        [DirectDom("Click Dialog Cancel Button")]
-        [DirectDomMethod("Click Active Tab Dialog Cancel Button")]
-        [MethodDescription("Clicks Cancel Button on found browser active tab pop up")]
-        public static bool ClickDialogCancel()
-        {
-            return ClickDialogButton(DialogCancelButtonCondition);
-        }
-
-
-
-        [DirectDom("Open File Dialog on active page")]
-        [DirectDomMethod("Open File Dialog On Active Page")]
+        [DirectDom("Open file dialog")]
+        [DirectDomMethod("Open file dialog")]
         [MethodDescription("Opens File Dialog to select files to upload")]
         public static bool OpenFileDialog()
         {
             try
             {
-                AutomationElement InputFileAUElement = GetBrowserChildAUElement(inputFileButtonCondition, TreeScope.Descendants);
-                if (InputFileAUElement != null)
-                {
-                    LogDebug("Clicking file dialog open button...");
-                    ClickOnButton(InputFileAUElement);
-                    return true;
-                }
-
-                return false;
+                return ClickDialogButtonByCondition(new PropertyCondition(AutomationElement.AutomationIdProperty, "file-upload-button"));
             }
             catch (Exception e)
             {
-                LogError("OpenFileDialog", e);
+                LogError("Failed to open file dialog", e);
                 return false;
             }
+        }
+
+        [DirectDom("Click dialog button")]
+        [DirectDomMethod("Click dialog button {button name}")]
+        [MethodDescription("Clicks on dialog button with specified name")]
+        public static bool ClickDialogButtonByName(string buttonName)
+        {
+            if (string.IsNullOrEmpty(buttonName))
+            {
+                LogDebug("Button name cannot be empty");
+                return false;
+            }
+
+            try
+            {
+                Condition condition = new AndCondition(
+                    new PropertyCondition(AutomationElement.NameProperty, buttonName),
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Button)
+                );
+                return ClickDialogButton(condition);
+            }
+            catch (Exception e)
+            {
+                LogError("Failed to click on a button: " + buttonName, e);
+                return false;
+            }
+
+        }
+
+        [DirectDom("Set dialog edit value")]
+        [DirectDomMethod("Set dialog edit {edit name} value {value}")]
+        [MethodDescription("Sets dialog edit value")]
+        public static bool SetDialogEditValue(string editName, string value)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(editName))
+                {
+                    LogDebug("Edit name cannot be empty");
+                    return false;
+                }
+
+                AutomationElement dialogElement = GetDialogElement();
+                if (dialogElement == null)
+                {
+                    return false;
+                }
+
+                Condition editElementCondition = new AndCondition(
+                    new PropertyCondition(AutomationElement.NameProperty, editName),
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit)
+                );
+
+                AutomationElement editElement = dialogElement.FindFirst(TreeScope.Descendants, editElementCondition);
+
+                if (editElement == null)
+                {
+                    LogDebug("Failed to find edit element " + editName);
+                    return false;
+                }
+
+                if (!editElement.Current.IsEnabled)
+                {
+                    LogDebug("Edit element: " + editName + " is not enabled");
+                    return false;
+                }
+
+                object valuePattern = null;
+
+                if (editElement.TryGetCurrentPattern(ValuePattern.Pattern, out valuePattern))
+                {
+                    ((ValuePattern)valuePattern).SetValue(value);
+                    return true;
+                }
+                else
+                {
+                    LogDebug("Edit element: " + editName + " does not support value pattern");
+                    return false;
+                }
+            }
+            catch (Exception e)
+            {
+                LogError("Failed to set edit: " + editName + " value", e);
+                return false;
+            }
+
+        }
+
+        private static AutomationElement GetDialogElement()
+        {
+            LogDebug("Creating localized conditions, only following langugaes are supported: PL, EN, DE, IT, SP");
+            Condition[] dialogLocalizedConditions =
+            {
+                new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "Dialogfeld"),
+                new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "dialog"),
+                new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "okno dialogowe"),
+                new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "diálogo"),
+                new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "dialogo"),
+            };
+            Condition DialogPropertyCondition = new OrCondition(dialogLocalizedConditions);
+
+            return GetBrowserChildAUElement(DialogPropertyCondition, TreeScope.Children);
+        }
+
+        private static bool ClickDialogButtonByCondition(Condition providedCondition)
+        {
+            Condition[] conditions = { new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Button), providedCondition };
+
+            Condition condition = new AndCondition(conditions);
+
+            return ClickDialogButton(condition);
         }
 
         private static bool GetDialogExistence()
         {
             LogDebug("Finding browser Dialog element...");
-            AutomationElement DialogAUElement = GetBrowserChildAUElement(DialogPropertyCondition, TreeScope.Children);
+            AutomationElement DialogAUElement = GetDialogElement();
 
             if (DialogAUElement != null)
             {
@@ -139,7 +224,7 @@ namespace Direct.BrowserDialogActions.Library
             return false;
         }
 
-        private static AutomationElement GetBrowserChildAUElement(PropertyCondition elementCondition, TreeScope scope)
+        private static AutomationElement GetBrowserChildAUElement(Condition elementCondition, TreeScope scope)
         {
             AutomationElementCollection BrowserAUElements = GetBrowserAUElements();
             if (BrowserAUElements.Count == 0)
@@ -194,16 +279,16 @@ namespace Direct.BrowserDialogActions.Library
             ((InvokePattern)invokePattern).Invoke();
         }
 
-        private static bool ClickDialogButton(PropertyCondition DialogButtonCondition)
+        private static bool ClickDialogButton(Condition DialogButtonCondition)
         {
             try
             {
-                AutomationElement DialogAUElement = GetBrowserChildAUElement(DialogPropertyCondition, TreeScope.Children);
+                AutomationElement DialogAUElement = GetDialogElement();
                 if (DialogAUElement != null)
                 {
                     LogDebug("Finding browser Dialog button element...");
                     AutomationElement ButtonElement = DialogAUElement.FindFirst(TreeScope.Descendants, DialogButtonCondition);
-                    LogDebug("Clicking OK Button...");
+                    LogDebug("Clicking button...");
                     ClickOnButton(ButtonElement);
                     return true;
                 }
@@ -212,7 +297,7 @@ namespace Direct.BrowserDialogActions.Library
             }
             catch (Exception e)
             {
-                LogError("Close Browser Dialog", e);
+                LogError("Failed to click on a dialog button. Error: ", e);
                 return false;
             }
         }
