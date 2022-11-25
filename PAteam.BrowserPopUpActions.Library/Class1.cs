@@ -3,16 +3,26 @@ using System;
 using log4net;
 using System.Windows.Automation;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Direct.BrowserDialogActions.Library
 {
-    [DirectSealed]
+    public static class BrowserEnum
+    {
+        public const string
+            Chrome = "Google Chrome",
+            Edge = "Microsoft Edge";
+    }
+
     [DirectDom("Browser Dialog Actions")]
     [ParameterType(false)]
     public static class BrowserDialogFunctions
     {
         private static readonly ILog _log = LogManager.GetLogger("LibraryObjects");
         private static readonly string PackageName = "Direct.BrowserDialogActions.Library";
+        private static string BrowserName = BrowserEnum.Edge;
+        private static string BrowserWindowName = string.Empty;
+        private static AutomationElement DialogElement = null;
 
         private static void LogDebug(string message)
         {
@@ -27,6 +37,70 @@ namespace Direct.BrowserDialogActions.Library
             if (_log.IsErrorEnabled)
             {
                 _log.Debug(PackageName + " - " + message, exception);
+            }
+        }
+
+        [DirectDom("Set browser window name")]
+        [DirectDomMethod("Set target browser window name to {browser window name}")]
+        [MethodDescription("Sets the target browser. Accepted values: chrome, edge. Case insensitive.")]
+        public static bool SetBrowserWindowName(string browserWindowName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(browserWindowName))
+                {
+                    throw new Exception("Browser name cannot be empty");
+                }
+
+                LogDebug("Setting browser window name to: " + browserWindowName);
+                BrowserWindowName = browserWindowName;
+                return true;
+
+            }
+            catch (Exception e)
+            {
+                LogError("Set Browser Name Exception", e);
+                return false;
+            }
+        }
+
+        [DirectDom("Set browser")]
+        [DirectDomMethod("Set target browser to {browser name}")]
+        [MethodDescription("Sets the target browser. Accepted values: chrome, edge. Case insensitive.")]
+        public static bool SetBrowserName(string browserName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(browserName))
+                {
+                    throw new Exception("Browser name cannot be empty");
+                }
+
+                if (browserName.ToLower() != "chrome" && browserName.ToLower() != "edge")
+                {
+                    throw new Exception("Accepted browser values: chrome, edge");
+                }
+
+                if (browserName.ToLower() == "chrome")
+                {
+                    LogDebug("Setting browser name to: " + browserName);
+                    BrowserName = BrowserEnum.Chrome;
+                    return true;
+                }
+                else if (browserName.ToLower() == "edge")
+                {
+                    LogDebug("Setting browser name to: " + browserName);
+                    BrowserName = BrowserEnum.Edge;
+                    return true;
+                }
+
+                return false;
+
+            }
+            catch (Exception e)
+            {
+                LogError("Set Browser Name Exception", e);
+                return false;
             }
         }
 
@@ -53,12 +127,13 @@ namespace Direct.BrowserDialogActions.Library
         {
             try
             {
-                AutomationElement DialogAUElement = GetDialogElement();
-                if (DialogAUElement != null)
+                DialogElement = GetDialogElement();
+
+                if (DialogElement != null)
                 {
                     Condition LabelPropertyCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text);
                     LogDebug("Finding browser dialog text elements...");
-                    AutomationElementCollection TextElements = DialogAUElement.FindAll(TreeScope.Descendants, LabelPropertyCondition);
+                    AutomationElementCollection TextElements = DialogElement.FindAll(TreeScope.Descendants, LabelPropertyCondition);
                     StringBuilder finalText = new StringBuilder();
                     LogDebug("Found " + TextElements.Count.ToString() + " text elements");
                     foreach (AutomationElement TextElement in TextElements)
@@ -139,8 +214,9 @@ namespace Direct.BrowserDialogActions.Library
                     return false;
                 }
 
-                AutomationElement dialogElement = GetDialogElement();
-                if (dialogElement == null)
+                DialogElement = GetDialogElement();
+
+                if (DialogElement == null)
                 {
                     return false;
                 }
@@ -150,7 +226,7 @@ namespace Direct.BrowserDialogActions.Library
                     new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit)
                 );
 
-                AutomationElement editElement = dialogElement.FindFirst(TreeScope.Descendants, editElementCondition);
+                AutomationElement editElement = DialogElement.FindFirst(TreeScope.Descendants, editElementCondition);
 
                 if (editElement == null)
                 {
@@ -187,8 +263,9 @@ namespace Direct.BrowserDialogActions.Library
 
         private static AutomationElement GetDialogElement()
         {
+            Condition dialogPropertyCondition = null;
             LogDebug("Creating localized conditions, only following langugaes are supported: PL, EN, DE, IT, SP");
-            Condition[] dialogLocalizedConditions =
+            Condition[] dialogLocalizedConditionsEdge =
             {
                 new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "Dialogfeld"),
                 new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "dialog"),
@@ -196,9 +273,17 @@ namespace Direct.BrowserDialogActions.Library
                 new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "diálogo"),
                 new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "dialogo"),
             };
-            Condition DialogPropertyCondition = new OrCondition(dialogLocalizedConditions);
 
-            return GetBrowserChildAUElement(DialogPropertyCondition, TreeScope.Children);
+            if (BrowserName == BrowserEnum.Edge)
+            {
+                dialogPropertyCondition = new OrCondition(dialogLocalizedConditionsEdge);
+            }
+            else if (BrowserName == BrowserEnum.Chrome)
+            {
+                dialogPropertyCondition = new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Custom);
+            }
+
+            return GetBrowserChildAUElement(dialogPropertyCondition, TreeScope.Children);
         }
 
         private static bool ClickDialogButtonByCondition(Condition providedCondition)
@@ -212,15 +297,17 @@ namespace Direct.BrowserDialogActions.Library
 
         private static bool GetDialogExistence()
         {
-            LogDebug("Finding browser Dialog element...");
+            LogDebug("Finding browser Dialog element for browser: " + BrowserName + " optional window name: " + BrowserWindowName);
             AutomationElement DialogAUElement = GetDialogElement();
 
             if (DialogAUElement != null)
             {
                 LogDebug("Found dialog with localized control type: " + DialogAUElement.Current.LocalizedControlType + " and name: " + DialogAUElement.Current.Name);
+                DialogElement = DialogAUElement;
                 return true;
             }
 
+            LogDebug("Dialog element not found...");
             return false;
         }
 
@@ -233,14 +320,41 @@ namespace Direct.BrowserDialogActions.Library
                 return null;
             }
 
-            LogDebug("BrowserAUElements Count: " + BrowserAUElements.Count.ToString());
-            Condition BrowserRootPropertyCondition = new PropertyCondition(AutomationElement.ClassNameProperty, "BrowserRootView");
-            foreach (AutomationElement BrowserAUElement in BrowserAUElements)
+
+            List<AutomationElement> targetBrowserElements = GetTargetBrowserAutomationElements(BrowserAUElements);
+
+            if (targetBrowserElements.Count == 0)
             {
-                AutomationElement BrowserRootAUElement = BrowserAUElement.FindFirst(TreeScope.Children, BrowserRootPropertyCondition);
-                if (BrowserRootAUElement != null)
+                return null;
+            }
+
+            LogDebug("BrowserAUElements Count: " + targetBrowserElements.Count.ToString());
+
+            foreach (AutomationElement browserAutomationElement in targetBrowserElements)
+            {
+                LogDebug("Trying to maximize window: " + browserAutomationElement.Current.Name);
+                MaximizeWindow(browserAutomationElement);
+
+                LogDebug("Trying to set focus to window: " + browserAutomationElement.Current.Name);
+                browserAutomationElement.SetFocus();
+
+                LogDebug("Trying to find dialog within following browser window: " + browserAutomationElement.Current.Name);
+                if (BrowserName == BrowserEnum.Edge)
                 {
-                    AutomationElement AUElement = BrowserRootAUElement.FindFirst(scope, elementCondition);
+                    Condition BrowserRootPropertyCondition = new PropertyCondition(AutomationElement.ClassNameProperty, "BrowserRootView");
+                    AutomationElement BrowserRootAUElement = browserAutomationElement.FindFirst(TreeScope.Children, BrowserRootPropertyCondition);
+                    if (BrowserRootAUElement != null)
+                    {
+                        AutomationElement AUElement = BrowserRootAUElement.FindFirst(scope, elementCondition);
+                        if (AUElement != null)
+                        {
+                            return AUElement;
+                        }
+                    }
+                }
+                else if (BrowserName == BrowserEnum.Chrome)
+                {
+                    AutomationElement AUElement = browserAutomationElement.FindFirst(scope, elementCondition);
                     if (AUElement != null)
                     {
                         return AUElement;
@@ -272,6 +386,20 @@ namespace Direct.BrowserDialogActions.Library
             return AutomationElement.RootElement;
         }
 
+        private static void MaximizeWindow(AutomationElement targetElement)
+        {
+            try
+            {
+                WindowPattern windowPattern = (WindowPattern)targetElement.GetCurrentPattern(WindowPattern.Pattern);
+                windowPattern.SetWindowVisualState(WindowVisualState.Maximized);
+            }
+            catch (Exception e)
+            {
+                LogError("Not able to Maximize Window: " + targetElement.Current.Name, e);
+            }
+
+        }
+
         private static void ClickOnButton(AutomationElement button)
         {
             object invokePattern = null;
@@ -283,11 +411,12 @@ namespace Direct.BrowserDialogActions.Library
         {
             try
             {
-                AutomationElement DialogAUElement = GetDialogElement();
-                if (DialogAUElement != null)
+                DialogElement = GetDialogElement();
+
+                if (DialogElement != null)
                 {
                     LogDebug("Finding browser Dialog button element...");
-                    AutomationElement ButtonElement = DialogAUElement.FindFirst(TreeScope.Descendants, DialogButtonCondition);
+                    AutomationElement ButtonElement = DialogElement.FindFirst(TreeScope.Descendants, DialogButtonCondition);
                     LogDebug("Clicking button...");
                     ClickOnButton(ButtonElement);
                     return true;
@@ -319,6 +448,30 @@ namespace Direct.BrowserDialogActions.Library
             {
                 return element.Current.Name;
             }
+        }
+
+        private static List<AutomationElement> GetTargetBrowserAutomationElements(AutomationElementCollection foundBrowserElements)
+        {
+            List<AutomationElement> result = new List<AutomationElement>();
+
+            foreach (AutomationElement element in foundBrowserElements)
+            {
+                LogDebug("Iterated browser element: " + element.Current.Name + ", trying to match by window name: " + BrowserWindowName);
+                if (!string.IsNullOrEmpty(BrowserWindowName) && element.Current.Name.ToLower().Contains(BrowserWindowName.ToLower()))
+                {
+                    result.Add(element);
+                } 
+                else
+                {
+                    LogDebug("Iterated browser element: " + element.Current.Name + ", trying to match by browser : " + BrowserName);
+                    if (element.Current.Name.ToLower().Contains(BrowserName.ToLower()))
+                    {
+                        result.Add(element);
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
