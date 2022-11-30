@@ -332,11 +332,18 @@ namespace Direct.BrowserDialogActions.Library
 
             foreach (AutomationElement browserAutomationElement in targetBrowserElements)
             {
-                LogDebug("Trying to maximize window: " + browserAutomationElement.Current.Name);
-                MaximizeWindow(browserAutomationElement);
+                try
+                {
+                    LogDebug("Trying to maximize window: " + browserAutomationElement.Current.Name);
+                    MaximizeWindow(browserAutomationElement);
 
-                LogDebug("Trying to set focus to window: " + browserAutomationElement.Current.Name);
-                browserAutomationElement.SetFocus();
+                    LogDebug("Trying to set focus to window: " + browserAutomationElement.Current.Name);
+                    browserAutomationElement.SetFocus();
+                }
+                catch (Exception)
+                {
+
+                }
 
                 LogDebug("Trying to find dialog within following browser window: " + browserAutomationElement.Current.Name);
                 if (BrowserName == BrowserEnum.Edge)
