@@ -463,15 +463,17 @@ namespace Direct.BrowserDialogActions.Library
 
             foreach (AutomationElement element in foundBrowserElements)
             {
-                LogDebug("Iterated browser element: " + element.Current.Name + ", trying to match by window name: " + BrowserWindowName);
-                if (!string.IsNullOrEmpty(BrowserWindowName) && element.Current.Name.ToLower().Contains(BrowserWindowName.ToLower()))
+                string elementName = element.Current.Name.Replace("\u200B", "").ToLower();
+
+                LogDebug("Iterated browser element: " + elementName + ", trying to match by window name: " + BrowserWindowName);
+                if (!string.IsNullOrEmpty(BrowserWindowName) && elementName.Contains(BrowserWindowName.ToLower()))
                 {
                     result.Add(element);
                 } 
                 else
                 {
-                    LogDebug("Iterated browser element: " + element.Current.Name + ", trying to match by browser : " + BrowserName);
-                    if (element.Current.Name.ToLower().Contains(BrowserName.ToLower()))
+                    LogDebug("Iterated browser element: " + elementName + ", trying to match by browser : " + BrowserName);
+                    if (elementName.Contains(BrowserName.ToLower()))
                     {
                         result.Add(element);
                     }
